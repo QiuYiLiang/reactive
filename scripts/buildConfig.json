@@ -1,0 +1,7 @@
+{
+  "defaultWatch": "reactive",
+  "targets": ["reactive"],
+  "external": [],
+  "globals": [],
+  "sourcemap": true
+}

@@ -1,0 +1,29 @@
+{
+  "name": "reactive",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "buildOptions": {
+    "formats": [
+      "es",
+      "cjs"
+    ]
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/reactive.cjs.js",
+  "module": "./dist/reactive.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/reactive.es.js",
+      "require": "./dist/reactive.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "dependencies": {
+    "shared": "workspace:*"
+  }
+}
