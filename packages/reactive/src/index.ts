@@ -73,3 +73,19 @@ export function reactive(value: any) {
     }
   };
 }
+
+type ComputedFn<V = any> = () => V;
+export function computed<V = any>(
+  fn: ComputedFn<V>,
+  deps?: reactiveFn[]
+): ComputedFn<V> {
+  let memoValue: any = null;
+  effect(() => {
+    if (memoValue === null) {
+      memoValue = reactive(fn());
+      return;
+    }
+    memoValue(fn());
+  }, deps);
+  return memoValue;
+}
