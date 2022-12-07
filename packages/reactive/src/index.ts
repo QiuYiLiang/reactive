@@ -1,11 +1,15 @@
 type Lensten = () => void;
 type reactiveFn<V = any> = (value?: V) => V;
+
 interface Effect {
   fn: Lensten;
   reactiveVals: Set<ReactiveVal>;
+  timer: any;
+  useDeps: boolean;
 }
 
 interface ReactiveVal {
+  initValue: any;
   value: any;
   effects: Set<Effect>;
 }
@@ -13,24 +17,27 @@ type DistoryEffect = () => void;
 
 let currentEffect: Effect | null = null;
 
-function createEffect(fn: Lensten): Effect {
+function createEffect(fn: Lensten, useDeps: boolean): Effect {
   return {
     fn,
     reactiveVals: new Set(),
+    timer: null,
+    useDeps,
   };
 }
 
 export function effect(fn: Lensten, deps?: reactiveFn[]): DistoryEffect {
   const prevEffect = currentEffect;
-  const effect = createEffect(fn);
+  const useDeps = typeof deps !== "undefined";
+  const effect = createEffect(fn, useDeps);
 
-  if (deps) {
+  if (useDeps) {
     currentEffect = null;
     fn();
   }
 
   currentEffect = effect;
-  if (deps) {
+  if (useDeps) {
     deps.forEach((dep) => {
       dep();
     });
@@ -48,16 +55,27 @@ export function effect(fn: Lensten, deps?: reactiveFn[]): DistoryEffect {
 
 function createReactive(value: any): ReactiveVal {
   return {
+    initValue: value,
     value,
     effects: new Set<Effect>(),
   };
 }
+
+let runningEffect: Effect | null = null;
 
 export function reactive<V = any>(value: V): reactiveFn<V>;
 export function reactive(value: any) {
   const reactiveVal = createReactive(value);
   return function (value: any) {
     if (arguments.length === 0) {
+      if (
+        runningEffect !== null &&
+        runningEffect.useDeps &&
+        !runningEffect.reactiveVals.has(reactiveVal)
+      ) {
+        return reactiveVal.initValue;
+      }
+
       if (currentEffect !== null) {
         reactiveVal.effects.add(currentEffect);
         currentEffect.reactiveVals.add(reactiveVal);
@@ -65,9 +83,21 @@ export function reactive(value: any) {
 
       return reactiveVal.value;
     } else {
+      if (reactiveVal.value === value) {
+        return reactiveVal.value;
+      }
       reactiveVal.value = value;
-      reactiveVal.effects.forEach(({ fn }) => {
-        fn();
+      reactiveVal.effects.forEach((effect) => {
+        const { fn } = effect;
+        if (effect.timer === null) {
+          effect.timer = setTimeout(() => {
+            const prevRunningEffect = runningEffect;
+            runningEffect = effect;
+            fn();
+            runningEffect = prevRunningEffect;
+            effect.timer = null;
+          }, 0);
+        }
       });
       return reactiveVal.value;
     }
@@ -81,11 +111,12 @@ export function computed<V = any>(
 ): ComputedFn<V> {
   let memoValue: any = null;
   effect(() => {
+    const value = fn();
     if (memoValue === null) {
-      memoValue = reactive(fn());
+      memoValue = reactive(value);
       return;
     }
-    memoValue(fn());
+    memoValue(value);
   }, deps);
   return memoValue;
 }
