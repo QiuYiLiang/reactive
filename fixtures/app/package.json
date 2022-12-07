@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "reactive": "workspace:*",
+    "@qiuyl/reactive": "workspace:*",
     "typescript": "^4.6.4",
     "vite": "^3.2.3"
   }

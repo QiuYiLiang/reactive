@@ -42,21 +42,15 @@ importers:
 
   fixtures/app:
     specifiers:
-      reactive: workspace:*
+      '@qiuyl/reactive': workspace:*
       typescript: ^4.6.4
       vite: ^3.2.3
     devDependencies:
-      reactive: link:../../packages/reactive
+      '@qiuyl/reactive': link:../../packages/reactive
       typescript: 4.9.3
       vite: 3.2.5
 
   packages/reactive:
-    specifiers:
-      shared: workspace:*
-    dependencies:
-      shared: link:../shared
-
-  packages/shared:
     specifiers: {}
 
 packages:

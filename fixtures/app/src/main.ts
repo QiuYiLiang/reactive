@@ -1,4 +1,4 @@
-import { effect, reactive } from "reactive";
+import { effect, reactive } from "@qiuyl/reactive";
 
 const count = reactive(0);
 const count2 = () => count() * 2;
